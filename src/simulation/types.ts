@@ -18,6 +18,7 @@ export interface DroneState {
   battery: number;
   altitude: number;
   mode: string;
+  currentRoom: number; // 1=A, 2=B, 3=C, 0=none
 }
 
 export interface SimulationState {
@@ -26,12 +27,13 @@ export interface SimulationState {
   persons: PersonData[];
   drone: DroneState;
   mappingProgress: number;
+  scanProgress: number;
+  detectedCount: number;
   systemStatus: {
     wifiCSI: boolean;
-    uwb: boolean;
-    mmWave: boolean;
     lidar: boolean;
     irSlam: boolean;
+    orbSlam3: boolean;
   };
 }
 

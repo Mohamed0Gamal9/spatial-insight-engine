@@ -5,31 +5,36 @@ import * as THREE from 'three';
 interface DroneProps {
   position: [number, number, number];
   isActive: boolean;
+  isSensing: boolean;
 }
 
-export function Drone({ position, isActive }: DroneProps) {
+export function Drone({ position, isActive, isSensing }: DroneProps) {
   const groupRef = useRef<THREE.Group>(null);
   const propRefs = useRef<THREE.Mesh[]>([]);
-  const signalRef = useRef<THREE.Mesh>(null);
+  const ringRefs = useRef<THREE.Mesh[]>([]);
 
   useFrame((_, delta) => {
     if (!isActive) return;
-    // Spin propellers
     propRefs.current.forEach((prop) => {
       if (prop) prop.rotation.y += delta * 30;
     });
-    // Pulse signal ring
-    if (signalRef.current) {
-      const scale = signalRef.current.scale.x;
-      if (scale > 5) {
-        signalRef.current.scale.set(0.5, 0.5, 0.5);
-        (signalRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5;
+    // 3 expanding WiFi rings with staggered phases
+    ringRefs.current.forEach((ring, i) => {
+      if (!ring) return;
+      const maxScale = isSensing ? 8 : 5;
+      const speed = isSensing ? 2.5 : 1.5;
+      const scale = ring.scale.x;
+      if (scale > maxScale) {
+        ring.scale.set(0.5, 0.5, 0.5);
+        (ring.material as THREE.MeshBasicMaterial).opacity = 0.5;
       } else {
-        signalRef.current.scale.multiplyScalar(1 + delta * 1.5);
-        (signalRef.current.material as THREE.MeshBasicMaterial).opacity *= (1 - delta * 0.8);
+        ring.scale.multiplyScalar(1 + delta * speed);
+        (ring.material as THREE.MeshBasicMaterial).opacity *= (1 - delta * 0.8);
       }
-    }
+    });
   });
+
+  const ringColor = isSensing ? '#00ccff' : '#00e68a';
 
   return (
     <group ref={groupRef} position={position}>
@@ -40,38 +45,39 @@ export function Drone({ position, isActive }: DroneProps) {
       </mesh>
 
       {/* Arms + Propellers */}
-      {[[-0.3, 0, -0.3], [0.3, 0, -0.3], [-0.3, 0, 0.3], [0.3, 0, 0.3]].map((armPos, i) => (
-        <group key={i} position={armPos as [number, number, number]}>
-          {/* Arm */}
+      {([[-0.3, 0, -0.3], [0.3, 0, -0.3], [-0.3, 0, 0.3], [0.3, 0, 0.3]] as [number, number, number][]).map((armPos, i) => (
+        <group key={i} position={armPos}>
           <mesh>
             <cylinderGeometry args={[0.02, 0.02, 0.1, 6]} />
             <meshStandardMaterial color="#3a6a7a" />
           </mesh>
-          {/* Propeller */}
-          <mesh
-            ref={(el) => { if (el) propRefs.current[i] = el; }}
-            position={[0, 0.08, 0]}
-          >
+          <mesh ref={(el) => { if (el) propRefs.current[i] = el; }} position={[0, 0.08, 0]}>
             <boxGeometry args={[0.25, 0.01, 0.04]} />
             <meshStandardMaterial color="#00e68a" emissive="#00e68a" emissiveIntensity={0.5} transparent opacity={0.8} />
           </mesh>
         </group>
       ))}
 
-      {/* LED indicator */}
+      {/* LED */}
       <pointLight color="#00e68a" intensity={2} distance={3} />
       <mesh position={[0, -0.08, 0]}>
         <sphereGeometry args={[0.03, 8, 8]} />
         <meshBasicMaterial color="#00e68a" />
       </mesh>
 
-      {/* WiFi signal ring */}
-      {isActive && (
-        <mesh ref={signalRef} position={[0, -0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 3 WiFi signal rings */}
+      {isActive && [0, 1, 2].map(i => (
+        <mesh
+          key={i}
+          ref={(el) => { if (el) ringRefs.current[i] = el; }}
+          position={[0, -0.2, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          scale={[1 + i * 1.5, 1 + i * 1.5, 1 + i * 1.5]}
+        >
           <ringGeometry args={[0.4, 0.5, 32]} />
-          <meshBasicMaterial color="#00ccff" transparent opacity={0.4} side={THREE.DoubleSide} />
+          <meshBasicMaterial color={ringColor} transparent opacity={0.3 - i * 0.08} side={THREE.DoubleSide} />
         </mesh>
-      )}
+      ))}
     </group>
   );
 }

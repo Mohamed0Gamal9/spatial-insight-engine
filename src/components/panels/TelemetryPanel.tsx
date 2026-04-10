@@ -22,8 +22,7 @@ export function TelemetryPanel({ state }: TelemetryPanelProps) {
           <StatusBadge label="WiFi CSI" active={state.systemStatus.wifiCSI} />
           <StatusBadge label="IR SLAM" active={state.systemStatus.irSlam} />
           <StatusBadge label="LiDAR" active={state.systemStatus.lidar} />
-          <StatusBadge label="UWB" active={state.systemStatus.uwb} disabled />
-          <StatusBadge label="mmWave" active={state.systemStatus.mmWave} disabled />
+          <StatusBadge label="ORB-SLAM3" active={state.systemStatus.orbSlam3} />
         </div>
       </div>
 
@@ -44,10 +43,24 @@ export function TelemetryPanel({ state }: TelemetryPanelProps) {
         </div>
       </div>
 
+      {/* Mapping Progress */}
+      {state.phase === 'mapping' && (
+        <div className="p-3 border-b border-border">
+          <h3 className="font-mono text-[10px] text-muted-foreground tracking-wider mb-2">MAPPING PROGRESS</h3>
+          <div className="w-full h-2 bg-muted rounded-sm overflow-hidden">
+            <div
+              className="h-full bg-tactical-green transition-all duration-300"
+              style={{ width: `${Math.round(state.mappingProgress * 100)}%` }}
+            />
+          </div>
+          <div className="font-mono text-[9px] text-tactical-green mt-1">{Math.round(state.mappingProgress * 100)}%</div>
+        </div>
+      )}
+
       {/* Detected Persons */}
       <div className="flex-1 overflow-y-auto p-3">
         <h3 className="font-mono text-[10px] text-muted-foreground tracking-wider mb-2">
-          DETECTED PERSONS ({state.persons.filter(p => p.visible).length}/{state.persons.length})
+          DETECTED PERSONS ({state.detectedCount}/{state.persons.length})
         </h3>
         <div className="space-y-2">
           {state.persons.map((person, i) => (
@@ -59,13 +72,11 @@ export function TelemetryPanel({ state }: TelemetryPanelProps) {
   );
 }
 
-function StatusBadge({ label, active, disabled }: { label: string; active: boolean; disabled?: boolean }) {
+function StatusBadge({ label, active }: { label: string; active: boolean }) {
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-sm ${disabled ? 'bg-muted/50' : 'bg-muted'}`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-tactical-green animate-pulse-glow' : disabled ? 'bg-tactical-dim' : 'bg-tactical-red'}`} />
-      <span className={disabled ? 'text-tactical-dim line-through' : active ? 'text-foreground' : 'text-tactical-red'}>
-        {label}
-      </span>
+    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-sm bg-muted`}>
+      <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-tactical-green animate-pulse-glow' : 'bg-tactical-red'}`} />
+      <span className={active ? 'text-foreground' : 'text-tactical-red'}>{label}</span>
     </div>
   );
 }
@@ -89,11 +100,18 @@ function PersonCard({ person, colorClass }: { person: SimulationState['persons']
         <span className="text-muted-foreground">Activity</span>
         <span className="text-foreground">{person.activity}</span>
         <span className="text-muted-foreground">Heart Rate</span>
-        <span className="text-tactical-red">{person.heartRate} BPM</span>
+        <span className="text-tactical-red">{person.heartRate} BPM <span className="text-tactical-dim">±2</span></span>
         <span className="text-muted-foreground">Breath Rate</span>
-        <span className="text-tactical-cyan">{person.breathRate} BPM</span>
+        <span className="text-tactical-cyan">{person.breathRate} BPM <span className="text-tactical-dim">±1</span></span>
         <span className="text-muted-foreground">Confidence</span>
-        <span className="text-tactical-green">{person.confidence}%</span>
+        <span className="text-tactical-green flex items-center gap-1">
+          {person.confidence}%
+          <span className="inline-block w-8 h-1 bg-muted rounded-sm overflow-hidden">
+            <span className="block h-full bg-tactical-green" style={{ width: `${person.confidence}%` }} />
+          </span>
+        </span>
+        <span className="text-muted-foreground">Keypoints</span>
+        <span className="text-foreground">17 · 30 FPS</span>
         <span className="text-muted-foreground">Position</span>
         <span className="text-foreground text-[8px]">({person.position.map(v => v.toFixed(1)).join(', ')})</span>
         <span className="text-muted-foreground">Room</span>

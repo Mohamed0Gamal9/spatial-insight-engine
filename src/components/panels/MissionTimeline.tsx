@@ -58,9 +58,17 @@ export function MissionTimeline({ state, onStart, onReset }: MissionTimelineProp
         })}
       </div>
 
-      {/* Mapping progress */}
-      <div className="font-mono text-[10px] text-muted-foreground">
-        MAP: <span className="text-tactical-cyan">{Math.round(state.mappingProgress * 100)}%</span>
+      {/* Progress bars + subjects */}
+      <div className="flex items-center gap-3 font-mono text-[10px]">
+        <div className="text-muted-foreground">
+          MAP: <span className="text-tactical-cyan">{Math.round(state.mappingProgress * 100)}%</span>
+        </div>
+        <div className="text-muted-foreground">
+          SCAN: <span className="text-tactical-green">{Math.round(state.scanProgress * 100)}%</span>
+        </div>
+        <div className="text-muted-foreground">
+          SUBJ: <span className="text-tactical-amber">{state.detectedCount}/{state.persons.length}</span>
+        </div>
       </div>
     </div>
   );
