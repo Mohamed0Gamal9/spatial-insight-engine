@@ -26,6 +26,17 @@ export function PersonSkeleton({ position, keypoints, visible, color = '#00e68a'
 
   return (
     <group position={position}>
+      {/* Volumetric body glow (RuView style) */}
+      <mesh position={[0, 0.85, 0]}>
+        <capsuleGeometry args={[0.25, 1.0, 8, 16]} />
+        <meshBasicMaterial color={color} transparent opacity={0.06} side={2} />
+      </mesh>
+      <mesh position={[0, 0.85, 0]}>
+        <capsuleGeometry args={[0.4, 1.2, 8, 16]} />
+        <meshBasicMaterial color={color} transparent opacity={0.03} side={2} />
+      </mesh>
+      <pointLight position={[0, 0.85, 0]} color={color} intensity={1.5} distance={2.5} />
+
       {/* Skeleton lines */}
       <lineSegments geometry={lineGeometry}>
         <lineBasicMaterial color={color} linewidth={2} transparent opacity={0.9} />
