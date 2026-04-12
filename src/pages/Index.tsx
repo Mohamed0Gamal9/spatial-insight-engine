@@ -1,6 +1,7 @@
 import { Scene3D } from '@/components/scene/Scene3D';
 import { TelemetryPanel } from '@/components/panels/TelemetryPanel';
 import { MissionTimeline } from '@/components/panels/MissionTimeline';
+import { FloorPlanOverlay } from '@/components/panels/FloorPlanOverlay';
 import { useSimulation } from '@/simulation/useSimulation';
 
 const ROOM_NAMES = ['', 'ROOM A', 'ROOM B', 'ROOM C'];
@@ -40,6 +41,7 @@ const Index = () => {
             <div>CAM: ORBIT FREE</div>
             <div>FPS: 60</div>
           </div>
+          <FloorPlanOverlay state={state} />
         </div>
         <TelemetryPanel state={state} />
       </div>

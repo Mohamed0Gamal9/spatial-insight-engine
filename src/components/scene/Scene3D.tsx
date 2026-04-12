@@ -3,6 +3,8 @@ import { OrbitControls, Stars, Text } from '@react-three/drei';
 import { Building } from './Building';
 import { Drone } from './Drone';
 import { PersonSkeleton } from './PersonSkeleton';
+import { LidarBeam } from './LidarBeam';
+import { VitalWaveform } from './VitalWaveform';
 import { SimulationState } from '@/simulation/types';
 
 interface Scene3DProps {
@@ -21,7 +23,8 @@ const ROOM_BOXES: { pos: [number, number, number]; size: [number, number, number
 export function Scene3D({ state }: Scene3DProps) {
   const isActive = state.phase !== 'idle';
   const isSensing = state.phase === 'sensing';
-  const activeRoomIdx = state.drone.currentRoom - 1; // 0-based, -1 = none
+  const isMapping = state.phase === 'mapping';
+  const activeRoomIdx = state.drone.currentRoom - 1;
 
   return (
     <Canvas camera={{ position: [8, 8, 8], fov: 50 }} style={{ background: '#050d14' }}>
@@ -32,14 +35,25 @@ export function Scene3D({ state }: Scene3DProps) {
       <Building opacity={Math.max(state.mappingProgress, 0.15)} mappingProgress={state.mappingProgress} />
       <Drone position={state.drone.position} isActive={isActive} isSensing={isSensing} />
 
+      {/* LiDAR beam during mapping */}
+      <LidarBeam dronePosition={state.drone.position} active={isMapping} />
+
       {state.persons.map((person, i) => (
-        <PersonSkeleton
-          key={person.id}
-          position={person.position}
-          keypoints={person.keypoints}
-          visible={person.visible}
-          color={PERSON_COLORS[i % PERSON_COLORS.length]}
-        />
+        <group key={person.id}>
+          <PersonSkeleton
+            position={person.position}
+            keypoints={person.keypoints}
+            visible={person.visible}
+            color={PERSON_COLORS[i % PERSON_COLORS.length]}
+          />
+          <VitalWaveform
+            position={person.position}
+            heartRate={person.heartRate}
+            breathRate={person.breathRate}
+            visible={person.visible}
+            color={PERSON_COLORS[i % PERSON_COLORS.length]}
+          />
+        </group>
       ))}
 
       {/* Room highlight box during sensing */}
