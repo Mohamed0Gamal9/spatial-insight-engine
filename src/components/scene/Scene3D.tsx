@@ -5,7 +5,7 @@ import { Drone } from './Drone';
 import { PersonSkeleton } from './PersonSkeleton';
 import { LidarBeam } from './LidarBeam';
 import { VitalWaveform } from './VitalWaveform';
-import { CSIHeatmap } from './CSIHeatmap';
+
 import { SimulationState } from '@/simulation/types';
 
 interface Scene3DProps {
