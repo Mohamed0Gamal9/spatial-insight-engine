@@ -5,7 +5,7 @@ import { Drone } from './Drone';
 import { PersonSkeleton } from './PersonSkeleton';
 import { LidarBeam } from './LidarBeam';
 import { VitalWaveform } from './VitalWaveform';
-import { CSIHeatmap } from './CSIHeatmap';
+
 import { SimulationState } from '@/simulation/types';
 
 interface Scene3DProps {
@@ -38,9 +38,6 @@ export function Scene3D({ state }: Scene3DProps) {
 
       {/* LiDAR beam during mapping */}
       <LidarBeam dronePosition={state.drone.position} active={isMapping} />
-
-      {/* WiFi CSI Heatmap on floor during sensing */}
-      <CSIHeatmap active={isSensing || state.phase === 'complete'} dronePosition={state.drone.position} persons={state.persons} />
 
       {state.persons.map((person, i) => (
         <group key={person.id}>
